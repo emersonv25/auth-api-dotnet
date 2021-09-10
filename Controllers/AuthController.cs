@@ -9,6 +9,7 @@ using Login.Data;
 using Login.Models;
 using Microsoft.AspNetCore.Authorization;
 using Login.Services;
+using login.Services.Interfaces;
 
 namespace Login.Controllers
 {
@@ -17,10 +18,12 @@ namespace Login.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuthService _authService;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
 
@@ -29,9 +32,8 @@ namespace Login.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<dynamic>> Autenticar([FromBody]Usuario user)
         {
-
-            var usuario = _context.Usuarios.SingleOrDefault(u => u.Username == user.Username && u.Senha == user.Senha);
-
+            Usuario usuario = new Usuario();
+            usuario = await _authService.Login(user.Username, user.Password);
             if (usuario == null){
                 return NotFound(new {message = "Usuário ou senha inválidos"});
             }
@@ -39,8 +41,41 @@ namespace Login.Controllers
             var token = TokenService.GenerateToken(usuario);
 
 
-            usuario.Senha = "";
+            usuario.Password = "";
             return new { usuario = usuario, token = token};
+
+        }
+        
+        [HttpPost]
+        [Route("cadastrar")]
+        [AllowAnonymous]
+        public async Task<ActionResult<dynamic>> Cadastrar([FromBody]Usuario user)
+        {
+            Usuario usuario = new Usuario();
+            if(user.Username != null && user.Password != null && user.Nome != null){
+                if(user.Password.Length < 5){
+                    return BadRequest(new {error = "A Senha precisa conter mais de 5 caracteres"});
+                }
+                if(user.Username.Length < 3){
+                    return BadRequest(new {error = "O nome de usuário precisa conter mais de 3 caracteres"});
+                }
+                if(user.Nome == ""){
+                    return BadRequest(new {error = "O Nome não pode ser nulo"});
+                }
+                if(await _authService.GetUsuario(user.Username) != null){
+                    return BadRequest(new {error = "Usuário já cadastrado"});
+                }
+                usuario = await _authService.Cadastrar(user);
+            }
+            else{
+                return BadRequest(new {error = "Dados para o cadastro inválidos !"});
+            }
+            
+            if (usuario == null){
+                return NotFound(new {error = "Não foi possivel cadastrar o usuário"});
+            }
+
+            return (new {message = "Usuário cadastrado com sucesso !"});
 
         }
         

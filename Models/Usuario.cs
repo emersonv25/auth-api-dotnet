@@ -7,22 +7,22 @@ namespace Login.Models
         public Usuario(){
             
         }
-        public Usuario(string Username, string Senha)
+        public Usuario(string Username, string Password)
         {
             this.Username = Username;
-            this.Senha = Senha;
+            this.Password = Password;
         }
 
 
-        
+        [Key]
         public int Id { get; set; }
-
+        [Required]
         public string Username { get; set; }
-
+        [Required]
         public string Nome { get; set; }
-
-        public string Senha { get; set; }
-
+        [Required]
+        public string Password { get; set; }
+        [Required]
         public int Ativo { get; set; }
 
         public string Cargo { get; set; }

@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Login_AspNet.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210910143412_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210910165403_primeiro")]
+    partial class primeiro
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,22 +28,26 @@ namespace Login_AspNet.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("Ativo")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(2)
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("Cargo")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Senha")
+                    b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -62,7 +66,7 @@ namespace Login_AspNet.Migrations
                             Cargo = "admin",
                             Email = "admin@admin.com",
                             Nome = "Administrador",
-                            Senha = "admin",
+                            Password = "admin",
                             Username = "admin"
                         });
                 });
