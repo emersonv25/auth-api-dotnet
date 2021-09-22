@@ -38,6 +38,10 @@ namespace Login.Controllers
                 return NotFound(new {error = "Usuário ou senha inválidos"});
             }
 
+            if(usuario.Ativo == 0){
+                return BadRequest(new {error = "Usuário Inativo !"});
+            }
+
             var token = TokenService.GenerateToken(usuario);
 
 
