@@ -35,7 +35,7 @@ namespace Login.Controllers
             Usuario usuario = new Usuario();
             usuario = await _authService.Login(user.Username, user.Password);
             if (usuario == null){
-                return NotFound(new {message = "Usuário ou senha inválidos"});
+                return NotFound(new {error = "Usuário ou senha inválidos"});
             }
 
             var token = TokenService.GenerateToken(usuario);
@@ -72,13 +72,32 @@ namespace Login.Controllers
             }
             
             if (usuario == null){
-                return NotFound(new {error = "Não foi possivel cadastrar o usuário"});
+                return BadRequest(new {error = "Não foi possivel cadastrar o usuário"});
             }
 
             return (new {message = "Usuário cadastrado com sucesso !"});
 
         }
-        
+        [HttpPut]
+        [Route("admin/editar")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<dynamic>> EditarUsuarioAdm(int id, Usuario usuarioEditado)
+        {
+
+            Usuario usuario = new Usuario();
+            usuario = await _authService.PutUsuario(id, usuarioEditado);
+            if(usuario == null){
+                return BadRequest(new {error = "Falha ao editar usuário"});
+            }
+
+            return (new {message = "Usuário editado com sucesso !"});
+        }
+
+
+
+
+
+
         [HttpGet]
         [Route("autenticado")]
         [Authorize]
@@ -91,7 +110,7 @@ namespace Login.Controllers
 
         [HttpGet]
         [Route("admin")]
-        [Authorize(Roles = "admin,gerente")]
+        [Authorize(Roles = "admin")]
         public string Admin() => "Administrador";
 
     }

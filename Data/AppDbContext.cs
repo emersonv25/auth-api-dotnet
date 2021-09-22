@@ -18,6 +18,7 @@ namespace Login.Data
             modelBuilder.Entity<Usuario>().HasIndex(u => u.Username).IsUnique(true);
             modelBuilder.Entity<Usuario>().Property(u => u.Password).HasMaxLength(128);
             modelBuilder.Entity<Usuario>().Property(u => u.Ativo).HasMaxLength(2).HasDefaultValue(1);
+            modelBuilder.Entity<Usuario>().Property(u => u.Cargo).HasDefaultValue("usuario");
             modelBuilder.Entity<Usuario>().Property(u => u.Email).HasMaxLength(256);
             modelBuilder.Entity<Usuario>()
                 .HasData(
