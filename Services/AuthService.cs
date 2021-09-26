@@ -38,7 +38,7 @@ namespace Login.Services
             {
                 var password = sha256_hash(usuario.Password);
                 usuario.Password = password;
-
+                usuario.Cargo = "usuario";
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
 

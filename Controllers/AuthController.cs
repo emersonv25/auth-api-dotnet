@@ -67,7 +67,10 @@ namespace Login.Controllers
                     return BadRequest(new {error = "O Nome não pode ser nulo"});
                 }
                 if(await _authService.GetUsuario(user.Username) != null){
-                    return BadRequest(new {error = "Usuário já cadastrado"});
+                    return BadRequest(new {error = "Nome de usuário já cadastrado"});
+                }
+                if(await _authService.GetUsuarioByEmail(user.Email) != null){
+                    return BadRequest(new {error = "E-mail já cadastrado"});
                 }
                 usuario = await _authService.Cadastrar(user);
             }
