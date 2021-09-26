@@ -99,10 +99,19 @@ namespace Login.Controllers
 
             return (new {message = "Usuário editado com sucesso !"});
         }
+        [HttpDelete]
+        [Route("admin/deletar")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<dynamic>> DeleteUsuarioAdm(int id)
+        {
 
+            bool usuario = await _authService.DeleteUsuario(id);
+            if(usuario == false){
+                return BadRequest(new {error = "Falha ao deletar usuário"});
+            }
 
-
-
+            return (new {message = "Usuário deletado com sucesso !"});
+        }
 
 
         [HttpGet]

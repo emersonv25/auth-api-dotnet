@@ -57,27 +57,5 @@ namespace Login.Controllers
 
             return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
         }
-
-        // DELETE: api/Usuarios/5
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> DeleteUsuario(int id)
-        {
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
-
-            _context.Usuarios.Remove(usuario);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool UsuarioExists(int id)
-        {
-            return _context.Usuarios.Any(e => e.Id == id);
-        }
     }
 }

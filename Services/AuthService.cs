@@ -68,7 +68,7 @@ namespace Login.Services
         public async Task<Usuario> GetUsuarioById(int id)
         {
             Usuario usuario = new Usuario();
-            usuario = _context.Usuarios.FirstOrDefault (u => u.Id == id);
+            usuario = await _context.Usuarios.FindAsync (id);
 
             return usuario;
         }
@@ -79,7 +79,7 @@ namespace Login.Services
             
             try
             {
-                usuario = _context.Usuarios.FirstOrDefault (u => u.Id == id);
+                usuario = await _context.Usuarios.FindAsync (id);
                 if(usuarioEditado.Password != "" && usuarioEditado.Password != null){
                     var password = sha256_hash(usuarioEditado.Password);
                     usuario.Password = password;
@@ -98,6 +98,19 @@ namespace Login.Services
             }
             
             return usuario;
+        }
+        public async Task<bool> DeleteUsuario(int id)
+        {
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+            {
+                return false;
+            }
+
+            _context.Usuarios.Remove(usuario);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
 
