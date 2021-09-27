@@ -14,5 +14,6 @@ namespace login.Services.Interfaces
         Task<Usuario> GetUsuarioById(int id); 
         Task<Usuario> PutUsuario(int id, Usuario usuarioEditado);
         Task <bool> DeleteUsuario(int id);
+        Task<Usuario> PutUsuarioAdm(int id, Usuario usuarioEditado);
     }
 }

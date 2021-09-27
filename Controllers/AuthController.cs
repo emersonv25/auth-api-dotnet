@@ -35,7 +35,7 @@ namespace Login.Controllers
             Usuario usuario = new Usuario();
             usuario = await _authService.Login(user.Username, user.Password);
             if (usuario == null){
-                return NotFound(new {error = "Usuário ou senha inválidos"});
+                return BadRequest(new {error = "Usuário ou senha inválidos"});
             }
 
             if(usuario.Ativo == 0){
@@ -89,6 +89,20 @@ namespace Login.Controllers
         [Route("admin/editar")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult<dynamic>> EditarUsuarioAdm(int id, Usuario usuarioEditado)
+        {
+
+            Usuario usuario = new Usuario();
+            usuario = await _authService.PutUsuarioAdm(id, usuarioEditado);
+            if(usuario == null){
+                return BadRequest(new {error = "Falha ao editar usuário"});
+            }
+
+            return (new {message = "Usuário editado com sucesso !"});
+        }
+        [HttpPut]
+        [Route("editar")]
+        [Authorize]
+        public async Task<ActionResult<dynamic>> EditarUsuario(int id, Usuario usuarioEditado)
         {
 
             Usuario usuario = new Usuario();

@@ -73,7 +73,7 @@ namespace Login.Services
             return usuario;
         }
 
-        public async Task<Usuario> PutUsuario(int id, Usuario usuarioEditado)
+        public async Task<Usuario> PutUsuarioAdm(int id, Usuario usuarioEditado)
         {
             Usuario usuario = new Usuario();
             
@@ -88,6 +88,30 @@ namespace Login.Services
                 usuario.Username = usuarioEditado.Username;
                 usuario.Ativo = usuarioEditado.Ativo;
                 usuario.Cargo = usuarioEditado.Cargo;
+                usuario.Email = usuarioEditado.Email;
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                usuario = new Usuario();
+            }
+            
+            return usuario;
+        }
+        public async Task<Usuario> PutUsuario(int id, Usuario usuarioEditado)
+        {
+            Usuario usuario = new Usuario();
+            
+            try
+            {
+                usuario = await _context.Usuarios.FindAsync (id);
+                if(usuarioEditado.Password != "" && usuarioEditado.Password != null){
+                    var password = sha256_hash(usuarioEditado.Password);
+                    usuario.Password = password;
+                }
+                usuario.Nome = usuarioEditado.Nome;
+                usuario.Username = usuarioEditado.Username;
                 usuario.Email = usuarioEditado.Email;
                 await _context.SaveChangesAsync();
             }
