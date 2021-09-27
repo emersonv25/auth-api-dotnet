@@ -42,7 +42,7 @@ namespace Login
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowSpecificOrigin",
-                    builder => builder.WithOrigins("http://localhost:8080", "http://26.88.156.150:8080", "http://192.168.0.108:8080/"));
+                    builder => builder.WithOrigins("http://localhost:8080", "http://192.168.0.108:8080/"));
             });
             services.AddControllers();
 
