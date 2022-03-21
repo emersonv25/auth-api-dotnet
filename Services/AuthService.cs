@@ -23,7 +23,7 @@ namespace Login.Services
             var senha = sha256_hash(password);
             try
             {
-                usuario = _context.Usuarios.FirstOrDefault (u => u.Username == username && u.Password == senha);
+                usuario = _context.Usuarios.FirstOrDefault(u => u.Username == username && u.Password == senha);
             }
             catch(Exception ex)
             {
@@ -32,24 +32,25 @@ namespace Login.Services
             }
             return usuario;
         }
-        public async Task<Usuario> Cadastrar(Usuario usuario)
+        public async Task<Usuario> Cadastrar(ParamCadastro usuario)
         {
+            Usuario user = new Usuario();
             try
             {
+                
                 var password = sha256_hash(usuario.Password);
-                usuario.Password = password;
-                usuario.Cargo = "usuario";
-                _context.Usuarios.Add(usuario);
+                user = new Usuario(usuario.Nome, password, usuario.Nome ,usuario.Email);
+                _context.Usuarios.Add(user);
                 await _context.SaveChangesAsync();
 
-                return usuario;
+                return user;
             }
             catch(Exception ex)
             {
                 Console.WriteLine(ex);
-                usuario = new Usuario();
+                user = new Usuario();
             }
-            return usuario;
+            return user;
         }
         public async Task<Usuario> GetUsuario(string username)
         {

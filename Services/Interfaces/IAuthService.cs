@@ -8,7 +8,7 @@ namespace login.Services.Interfaces
     public interface IAuthService
     {
         Task<Usuario> Login(string username, string password); 
-        Task<Usuario> Cadastrar(Usuario usuario); 
+        Task<Usuario> Cadastrar(ParamCadastro usuario); 
         Task<Usuario> GetUsuario(string username); 
         Task<Usuario> GetUsuarioByEmail(string email); 
         Task<Usuario> GetUsuarioById(int id); 

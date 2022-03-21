@@ -30,10 +30,9 @@ namespace Login.Controllers
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<dynamic>> Autenticar([FromBody]Usuario user)
+        public async Task<ActionResult<dynamic>> Autenticar([FromBody]ParamLogin user)
         {
-            Usuario usuario = new Usuario();
-            usuario = await _authService.Login(user.Username, user.Password);
+            Usuario usuario = await _authService.Login(user.Username, user.Password);
             if (usuario == null){
                 return BadRequest(new {error = "Usuário ou senha inválidos"});
             }
@@ -53,7 +52,7 @@ namespace Login.Controllers
         [HttpPost]
         [Route("cadastrar")]
         [AllowAnonymous]
-        public async Task<ActionResult<dynamic>> Cadastrar([FromBody]Usuario user)
+        public async Task<ActionResult<dynamic>> Cadastrar([FromBody]ParamCadastro user)
         {
             Usuario usuario = new Usuario();
             if(user.Username != null && user.Password != null && user.Nome != null){

@@ -12,6 +12,15 @@ namespace Login.Models
             this.Username = Username;
             this.Password = Password;
         }
+        public Usuario(string Username, string Password, string Nome, string Email, string Cargo = "usuario", int Ativo = 1)
+        {
+            this.Username = Username;
+            this.Password = Password;
+            this.Nome = Nome;
+            this.Email = Email;
+            this.Cargo = Cargo;
+            this.Ativo = Ativo;
+        }
 
 
 
@@ -30,5 +39,21 @@ namespace Login.Models
         public string Email { get; set; }
 
 
+    }
+    public class ParamLogin
+    {
+        public string Username { get; set; }
+
+        public string Password { get; set; }
+    }
+    public class ParamCadastro
+    {
+        public string Username { get; set; }
+
+        public string Nome { get; set; }
+
+        public string Password { get; set; }
+
+        public string Email { get; set; }
     }
 }
