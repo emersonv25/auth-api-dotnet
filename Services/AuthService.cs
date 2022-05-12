@@ -15,7 +15,6 @@ namespace Login.Services
         public AuthService(AppDbContext context)
         {
             _context = context;
-
         }
         public async Task<Usuario> Login(string username, string password)
         {
@@ -39,7 +38,7 @@ namespace Login.Services
             {
                 
                 var password = sha256_hash(usuario.Password);
-                user = new Usuario(usuario.Nome, password, usuario.Nome ,usuario.Email);
+                user = new Usuario(usuario.Username, password, usuario.Nome ,usuario.Email);
                 _context.Usuarios.Add(user);
                 await _context.SaveChangesAsync();
 
