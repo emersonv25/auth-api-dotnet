@@ -1,5 +1,5 @@
 # ApiLogin
-Webapi para autenticação utilizando
+Webapi para autenticação com JWT
 
 # Front-End
 https://github.com/emersonv25/Login-JWT-VueJs
