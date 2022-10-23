@@ -1,142 +1,205 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Login.Data;
-using Login.Models;
+using ApiAuth.Models;
 using Microsoft.AspNetCore.Authorization;
-using Login.Services;
-using login.Services.Interfaces;
+using ApiAuth.Services;
+using ApiAuth.Services.Interfaces;
+using ApiAuth.Models.Object;
 
-namespace Login.Controllers
+namespace ApiAuth.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AppDbContext _context;
         private readonly IAuthService _authService;
 
-        public AuthController(AppDbContext context, IAuthService authService)
+        public AuthController(IAuthService authService)
         {
-            _context = context;
             _authService = authService;
         }
 
-
+        /// <summary>
+        /// Login, obtem o token do usuário através de seu username e senha
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<dynamic>> Autenticar([FromBody]ParamLogin user)
+        public ActionResult<ViewUser> Login([FromBody]ParamLogin login)
         {
-            Usuario usuario = await _authService.Login(user.Username, user.Password);
-            if (usuario == null){
-                return BadRequest(new {error = "Usuário ou senha inválidos"});
+            try
+            {
+                User user = _authService.Login(login.Username, login.Password);
+                if (user == null)
+                {
+                    return BadRequest("Usuário ou senha inválidos !");
+                }
+
+                if (user.Enabled == false)
+                {
+                    return BadRequest("Usuário Inativo !");
+                }
+
+                var token = TokenService.GenerateToken(user);
+
+                return new ViewUser(user.Username, user.FullName, user.Email, token); ;
             }
-
-            if(usuario.Ativo == 0){
-                return BadRequest(new {error = "Usuário Inativo !"});
+            catch(Exception ex)
+            {
+                return BadRequest("Não foi possível realizar o login: " + ex.Message);
             }
-
-            var token = TokenService.GenerateToken(usuario);
-
-
-            usuario.Password = "";
-            return new { usuario = usuario, token = token};
 
         }
-        
+        /// <summary>
+        /// Registra o usuário
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        [Route("cadastrar")]
+        [Route("register")]
         [AllowAnonymous]
-        public async Task<ActionResult<dynamic>> Cadastrar([FromBody]ParamCadastro user)
+        public async Task<ActionResult> Post([FromBody]ParamRegister user)
         {
-            Usuario usuario = new Usuario();
-            if(user.Username != null && user.Password != null && user.Nome != null){
-                if(user.Password.Length < 5){
-                    return BadRequest(new {error = "A Senha precisa conter mais de 5 caracteres"});
+            try
+            {
+                if (user.Username != null && user.Password != null && user.FullName != null)
+                {
+                    if (user.Password.Length < 4)
+                    {
+                        return BadRequest("A Senha precisa conter mais de 4 caracteres");
+                    }
+                    if (user.Username.Length < 4)
+                    {
+                        return BadRequest("O nome de usuário precisa conter mais de 4 caracteres");
+                    }
+                    if (user.FullName == "")
+                    {
+                        return BadRequest("O Nome não pode ser nulo");
+                    }
+                    if (_authService.GetUser(user.Username) != null)
+                    {
+                        return BadRequest("Nome de usuário já cadastrado");
+                    }
+                    if (_authService.GetUserByEmail(user.Email) != null)
+                    {
+                        return BadRequest("E-mail já cadastrado");
+                    }
                 }
-                if(user.Username.Length < 3){
-                    return BadRequest(new {error = "O nome de usuário precisa conter mais de 3 caracteres"});
+                else
+                {
+                    return BadRequest("Dados para o cadastro inválidos !");
                 }
-                if(user.Nome == ""){
-                    return BadRequest(new {error = "O Nome não pode ser nulo"});
-                }
-                if(await _authService.GetUsuario(user.Username) != null){
-                    return BadRequest(new {error = "Nome de usuário já cadastrado"});
-                }
-                if(await _authService.GetUsuarioByEmail(user.Email) != null){
-                    return BadRequest(new {error = "E-mail já cadastrado"});
-                }
-                usuario = await _authService.Cadastrar(user);
-            }
-            else{
-                return BadRequest(new {error = "Dados para o cadastro inválidos !"});
-            }
-            
-            if (usuario == null){
-                return BadRequest(new {error = "Não foi possivel cadastrar o usuário"});
-            }
 
-            return (new {message = "Usuário cadastrado com sucesso !"});
+                User newUser = await _authService.Register(user);
+                if (newUser == null)
+                {
+                    return BadRequest("Não foi possivel cadastrar o usuário");
+                }
+
+                return Ok("Usuário cadastrado com sucesso !");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Não foi possível realizar o cadastro: " + ex.Message);
+            }
 
         }
+        /// <summary>
+        /// Edita um usuário especifico
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPut]
-        [Route("admin/editar")]
+        [Route("admin/update/{id:int}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult<dynamic>> EditarUsuarioAdm(int id, Usuario usuarioEditado)
+        public async Task<ActionResult> UpdateAdmin(int id, User usuarioEditado)
         {
+            try
+            {
+                User usuario = await _authService.PutUserAdm(id, usuarioEditado);
+                if (usuario == null)
+                {
+                    return BadRequest("Falha ao editar usuário");
+                }
 
-            Usuario usuario = new Usuario();
-            usuario = await _authService.PutUsuarioAdm(id, usuarioEditado);
-            if(usuario == null){
-                return BadRequest(new {error = "Falha ao editar usuário"});
+                return Ok("Usuário editado com sucesso !");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Não foi possivel realizar a atualização: " + ex.Message);
             }
 
-            return (new {message = "Usuário editado com sucesso !"});
         }
+        /// <summary>
+        /// Permite o proprio usuário editar seus dados
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPut]
-        [Route("editar")]
+        [Route("update/{id:int}")]
         [Authorize]
-        public async Task<ActionResult<dynamic>> EditarUsuario(int id, Usuario usuarioEditado)
+        public async Task<ActionResult> Update(int id, User userEdited)
         {
+            try
+            {
+                var userId = HttpContext.User;
+                var username = userId.Identity.Name;
+                User user = await _authService.PutUser(id, userEdited);
+                if (user == null)
+                {
+                    return BadRequest("Falha ao editar usuário");
+                }
 
-            Usuario usuario = new Usuario();
-            usuario = await _authService.PutUsuario(id, usuarioEditado);
-            if(usuario == null){
-                return BadRequest(new {error = "Falha ao editar usuário"});
+                return Ok("Usuário editado com sucesso !");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Não foi possivel realizar a atualização: " + ex.Message);
             }
 
-            return (new {message = "Usuário editado com sucesso !"});
         }
+        /// <summary>
+        /// Deleta um usuário especifico
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete]
-        [Route("admin/deletar")]
+        [Route("admin/delete/{id:int}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult<dynamic>> DeleteUsuarioAdm(int id)
+        public async Task<ActionResult> DeleteUserAdm(int id)
         {
 
-            bool usuario = await _authService.DeleteUsuario(id);
-            if(usuario == false){
-                return BadRequest(new {error = "Falha ao deletar usuário"});
+            try
+            {
+                bool user = await _authService.DeleteUser(id);
+                if (user == false)
+                {
+                    return BadRequest("Falha ao deletar usuário");
+                }
+
+                return Ok("Usuário deletado com sucesso !");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Não foi possível excluir o usuário: " + ex.Message);
             }
 
-            return (new {message = "Usuário deletado com sucesso !"});
         }
 
-
+        /// <summary>
+        /// Verifica se está autenticado
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        [Route("autenticado")]
+        [Route("authenticated")]
         [Authorize]
-        public string Autenticado() => String.Format("Autenticado: {0}", User.Identity.Name);
-
-        [HttpGet]
-        [Route("anonimo")]
-        [AllowAnonymous]
-        public string Anonimo() => "Anônimo";
-
+        public string Autenticado() {
+            return String.Format("Autenticado: {0}", User.Identity.Name);
+         }
+        /// <summary>
+        /// Verifica se tem permissão de administrador
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("admin")]
         [Authorize(Roles = "admin")]

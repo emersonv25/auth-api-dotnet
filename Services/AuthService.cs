@@ -1,13 +1,12 @@
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using login.Services.Interfaces;
-using Login.Data;
-using Login.Models;
-using System.Security.Cryptography;
+using ApiAuth.Data;
+using ApiAuth.Models;
+using ApiAuth.Services.Interfaces;
+using ApiAuth.Models.Object;
 
-namespace Login.Services
+namespace ApiAuth.Services
 {
     public class AuthService : IAuthService
     {
@@ -15,142 +14,89 @@ namespace Login.Services
         public AuthService(AppDbContext context)
         {
             _context = context;
-        }
-        public async Task<Usuario> Login(string username, string password)
-        {
-            Usuario usuario = new Usuario();
-            var senha = sha256_hash(password);
-            try
-            {
-                usuario = _context.Usuarios.FirstOrDefault(u => u.Username == username && u.Password == senha);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                usuario = new Usuario();
-            }
-            return usuario;
-        }
-        public async Task<Usuario> Cadastrar(ParamCadastro usuario)
-        {
-            Usuario user = new Usuario();
-            try
-            {
-                
-                var password = sha256_hash(usuario.Password);
-                user = new Usuario(usuario.Username, password, usuario.Nome ,usuario.Email);
-                _context.Usuarios.Add(user);
-                await _context.SaveChangesAsync();
 
-                return user;
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                user = new Usuario();
-            }
+        }
+        public User Login(string username, string password)
+        {
+            var passwordCrypted = Utils.sha256_hash(password);
+            User user = _context.User.SingleOrDefault(u => u.Username == username && u.Password == passwordCrypted);
             return user;
         }
-        public async Task<Usuario> GetUsuario(string username)
+        public async Task<User> Register(ParamRegister user)
         {
-            Usuario usuario = new Usuario();
-            usuario = _context.Usuarios.FirstOrDefault (u => u.Username == username);
+            var password = Utils.sha256_hash(user.Password);
+            User newUser = new User(user.Username, password, user.FullName, user.Email);
+            _context.User.Add(newUser);
+            await _context.SaveChangesAsync();
 
-            return usuario;
+            return newUser;
         }
-        public async Task<Usuario> GetUsuarioByEmail(string email)
+        public User GetUser(string username)
         {
-            Usuario usuario = new Usuario();
-            usuario = _context.Usuarios.FirstOrDefault (u => u.Email == email);
+            User user = new User();
+            user = _context.User.SingleOrDefault(u => u.Username == username);
 
-            return usuario;
+            return user;
         }
-        public async Task<Usuario> GetUsuarioById(int id)
+        public User GetUserByEmail(string email)
         {
-            Usuario usuario = new Usuario();
-            usuario = await _context.Usuarios.FindAsync (id);
+            User user = new User();
+            user = _context.User.SingleOrDefault(u => u.Email == email);
 
-            return usuario;
+            return user;
+        }
+        public async Task<User> GetUserById(int id)
+        {
+            User user = await _context.User.FindAsync(id);
+
+            return user;
         }
 
-        public async Task<Usuario> PutUsuarioAdm(int id, Usuario usuarioEditado)
+        public async Task<User> PutUserAdm(int id, User userEdited)
         {
-            Usuario usuario = new Usuario();
-            
-            try
+            User user = await _context.User.FindAsync(id);
+            if (userEdited.Password != "" && userEdited.Password != null)
             {
-                usuario = await _context.Usuarios.FindAsync (id);
-                if(usuarioEditado.Password != "" && usuarioEditado.Password != null){
-                    var password = sha256_hash(usuarioEditado.Password);
-                    usuario.Password = password;
-                }
-                usuario.Nome = usuarioEditado.Nome;
-                usuario.Username = usuarioEditado.Username;
-                usuario.Ativo = usuarioEditado.Ativo;
-                usuario.Cargo = usuarioEditado.Cargo;
-                usuario.Email = usuarioEditado.Email;
-                await _context.SaveChangesAsync();
+                var password = Utils.sha256_hash(userEdited.Password);
+                user.Password = password;
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                usuario = new Usuario();
-            }
-            
-            return usuario;
+            user.FullName = userEdited.FullName;
+            user.Username = userEdited.Username;
+            user.Enabled = userEdited.Enabled;
+            user.Admin = userEdited.Admin;
+            user.Email = userEdited.Email;
+            await _context.SaveChangesAsync();
+
+            return user;
         }
-        public async Task<Usuario> PutUsuario(int id, Usuario usuarioEditado)
+        public async Task<User> PutUser(int id, User userEdited)
         {
-            Usuario usuario = new Usuario();
-            
-            try
+
+            User user = await _context.User.FindAsync(id);
+            if (userEdited.Password != "" && userEdited.Password != null)
             {
-                usuario = await _context.Usuarios.FindAsync (id);
-                if(usuarioEditado.Password != "" && usuarioEditado.Password != null){
-                    var password = sha256_hash(usuarioEditado.Password);
-                    usuario.Password = password;
-                }
-                usuario.Nome = usuarioEditado.Nome;
-                usuario.Username = usuarioEditado.Username;
-                usuario.Email = usuarioEditado.Email;
-                await _context.SaveChangesAsync();
+                var password = Utils.sha256_hash(userEdited.Password);
+                user.Password = password;
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-                usuario = new Usuario();
-            }
-            
-            return usuario;
+            user.FullName = userEdited.FullName;
+            user.Username = userEdited.Username;
+            user.Email = userEdited.Email;
+            await _context.SaveChangesAsync();
+
+            return user;
         }
-        public async Task<bool> DeleteUsuario(int id)
+        public async Task<bool> DeleteUser(int id)
         {
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null)
+            var user = await _context.User.FindAsync(id);
+            if (user == null)
             {
                 return false;
             }
 
-            _context.Usuarios.Remove(usuario);
+            _context.User.Remove(user);
             await _context.SaveChangesAsync();
 
             return true;
         }
-
-
-
-        public static String sha256_hash(String value) {
-            StringBuilder Sb = new StringBuilder();
-
-            using (SHA256 hash = SHA256Managed.Create()) {
-                Encoding enc = Encoding.UTF8;
-                Byte[] result = hash.ComputeHash(enc.GetBytes(value));
-
-                foreach (Byte b in result)
-                Sb.Append(b.ToString("x2"));
-            }
-
-            return Sb.ToString();
-            }
-        }
+    }
 }

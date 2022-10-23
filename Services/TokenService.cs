@@ -3,13 +3,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Login.Models;
+using ApiAuth.Models;
 
-namespace Login.Services
+namespace ApiAuth.Services
 {
     public static class TokenService
     {
-        public static string GenerateToken(Usuario usuario)
+        public static string GenerateToken(User usuario)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(Settings.Secret);
@@ -17,9 +17,9 @@ namespace Login.Services
             {
                 Subject = new ClaimsIdentity(new Claim[]{
                     new Claim(ClaimTypes.Name, usuario.Username.ToString()),
-                    new Claim(ClaimTypes.Role, usuario.Cargo.ToString())
+                    new Claim(ClaimTypes.Role, usuario.Admin.Value ? "admin" : "")
                 }),
-                Expires = DateTime.UtcNow.AddHours(2),
+                Expires = DateTime.UtcNow.AddHours(24),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

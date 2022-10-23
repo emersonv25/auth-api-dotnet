@@ -1,19 +1,21 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Login.Models;
+using ApiAuth.Models;
 using Microsoft.AspNetCore.Mvc;
+using ApiAuth.Models.Object;
 
-namespace login.Services.Interfaces
+
+namespace ApiAuth.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<Usuario> Login(string username, string password); 
-        Task<Usuario> Cadastrar(ParamCadastro usuario); 
-        Task<Usuario> GetUsuario(string username); 
-        Task<Usuario> GetUsuarioByEmail(string email); 
-        Task<Usuario> GetUsuarioById(int id); 
-        Task<Usuario> PutUsuario(int id, Usuario usuarioEditado);
-        Task <bool> DeleteUsuario(int id);
-        Task<Usuario> PutUsuarioAdm(int id, Usuario usuarioEditado);
+        User Login(string username, string password); 
+        Task<User> Register(ParamRegister usuario); 
+        User GetUser(string username); 
+        User GetUserByEmail(string email); 
+        Task<User> GetUserById(int id); 
+        Task<User> PutUser(int id, User usuarioEditado);
+        Task <bool> DeleteUser(int id);
+        Task<User> PutUserAdm(int id, User usuarioEditado);
     }
 }

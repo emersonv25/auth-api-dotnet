@@ -1,31 +1,34 @@
-using Login.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using ApiAuth.Services;
+using ApiAuth.Models;
 
-namespace Login.Data
+namespace ApiAuth.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base (options)
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-
         }
 
-        public DbSet<Usuario> Usuarios { get; set; }
-
+        public DbSet<User> User { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Usuario>().HasKey(u => u.Id);
-            modelBuilder.Entity<Usuario>().Property(u => u.Username).HasMaxLength(64).IsRequired();
-            modelBuilder.Entity<Usuario>().HasIndex(u => u.Username).IsUnique(true);
-            modelBuilder.Entity<Usuario>().HasIndex(u => u.Email).IsUnique(true);
-            modelBuilder.Entity<Usuario>().Property(u => u.Password).HasMaxLength(128).IsRequired();
-            modelBuilder.Entity<Usuario>().Property(u => u.Ativo).HasMaxLength(2).HasDefaultValue(1).IsRequired();
-            modelBuilder.Entity<Usuario>().Property(u => u.Cargo).HasDefaultValue("usuario").IsRequired();
-            modelBuilder.Entity<Usuario>().Property(u => u.Email).HasMaxLength(256).IsRequired();
-            modelBuilder.Entity<Usuario>()
+
+            // USUARIO
+            modelBuilder.Entity<User>().HasKey(u => u.UserId);
+            modelBuilder.Entity<User>().Property(u => u.Username).HasMaxLength(64).IsRequired();
+            modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique(true);
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique(true);
+            modelBuilder.Entity<User>().Property(u => u.Password).IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.Enabled).HasDefaultValueSql("1").IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.Admin).HasDefaultValueSql("0").IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.Email).HasMaxLength(256).IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.CreatedAt).IsRequired();
+            modelBuilder.Entity<User>()
                 .HasData(
-                    new Usuario { Id = 1, Username = "admin", Nome = "Administrador", Password = "admin", Ativo = 1, Cargo = "admin" ,Email = "admin@admin.com" }
+                    new User { UserId = 1, Username = "admin", FullName = "Administrador", Password = Utils.sha256_hash("admin"), Enabled = true, Admin = true, Email = "admin@admin.com"}
                 );
         }
+
     }
 }
