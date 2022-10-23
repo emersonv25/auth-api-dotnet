@@ -9,13 +9,13 @@ namespace ApiAuth.Services.Interfaces
 {
     public interface IAuthService
     {
-        User Login(string username, string password); 
+        Task<User?> Login(string username, string password); 
         Task<User> Register(ParamRegister usuario); 
-        User GetUser(string username); 
-        User GetUserByEmail(string email); 
-        Task<User> GetUserById(int id); 
-        Task<User> PutUser(int id, User usuarioEditado);
-        Task <bool> DeleteUser(int id);
-        Task<User> PutUserAdm(int id, User usuarioEditado);
+        Task<User?> GetUser(string username); 
+        Task<User?> GetUserByEmail(string email); 
+        Task<User?> GetUserById(int id); 
+        Task<User?> PutUser(string username, User userUpdated);
+        Task <bool> DeleteUser(string username);
+        Task<User?> PutUserAdm(string username, User userUpdated);
     }
 }

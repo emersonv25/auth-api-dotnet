@@ -25,11 +25,11 @@ namespace ApiAuth.Controllers
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
-        public ActionResult<ViewUser> Login([FromBody]ParamLogin login)
+        public async Task<ActionResult<ViewUser>> LoginAsync([FromBody]ParamLogin login)
         {
             try
             {
-                User user = _authService.Login(login.Username, login.Password);
+                User? user = await _authService.Login(login.Username, login.Password);
                 if (user == null)
                 {
                     return BadRequest("Usuário ou senha inválidos !");
@@ -37,7 +37,7 @@ namespace ApiAuth.Controllers
 
                 if (user.Enabled == false)
                 {
-                    return BadRequest("Usuário Inativo !");
+                    return Unauthorized("Usuário Inativo !");
                 }
 
                 var token = TokenService.GenerateToken(user);
@@ -89,7 +89,7 @@ namespace ApiAuth.Controllers
                     return BadRequest("Dados para o cadastro inválidos !");
                 }
 
-                User newUser = await _authService.Register(user);
+                User? newUser = await _authService.Register(user);
                 if (newUser == null)
                 {
                     return BadRequest("Não foi possivel cadastrar o usuário");
@@ -111,14 +111,14 @@ namespace ApiAuth.Controllers
         [HttpPut]
         [Route("admin/update/{id:int}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> UpdateAdmin(int id, User usuarioEditado)
+        public async Task<ActionResult> UpdateAdmin(string username, User usuarioEditado)
         {
             try
             {
-                User usuario = await _authService.PutUserAdm(id, usuarioEditado);
+                User? usuario = await _authService.PutUserAdm(username, usuarioEditado);
                 if (usuario == null)
                 {
-                    return BadRequest("Falha ao editar usuário");
+                    return BadRequest("Usuário não encontrado");
                 }
 
                 return Ok("Usuário editado com sucesso !");
@@ -137,13 +137,19 @@ namespace ApiAuth.Controllers
         [HttpPut]
         [Route("update/{id:int}")]
         [Authorize]
-        public async Task<ActionResult> Update(int id, User userEdited)
+        public async Task<ActionResult> Update(User userEdited)
         {
             try
             {
-                var userId = HttpContext.User;
-                var username = userId.Identity.Name;
-                User user = await _authService.PutUser(id, userEdited);
+                var identity = HttpContext.User.Identity;
+                var username = identity.Name;
+
+                if(string.IsNullOrEmpty(username))
+                {
+                    return Unauthorized("Falha ao identificar o usuário, favor relogar");
+                }
+
+                User? user = await _authService.PutUser(username, userEdited);
                 if (user == null)
                 {
                     return BadRequest("Falha ao editar usuário");
@@ -166,12 +172,12 @@ namespace ApiAuth.Controllers
         [HttpDelete]
         [Route("admin/delete/{id:int}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> DeleteUserAdm(int id)
+        public async Task<ActionResult> DeleteUserAdm(string username)
         {
 
             try
             {
-                bool user = await _authService.DeleteUser(id);
+                bool user = await _authService.DeleteUser(username);
                 if (user == false)
                 {
                     return BadRequest("Falha ao deletar usuário");
@@ -187,23 +193,24 @@ namespace ApiAuth.Controllers
         }
 
         /// <summary>
-        /// Verifica se está autenticado
+        /// Verifica se está autenticado e retorna as informações do usuario
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [Route("authenticated")]
         [Authorize]
-        public string Autenticado() {
-            return String.Format("Autenticado: {0}", User.Identity.Name);
+        public async Task<ActionResult<User?>> Authenticated() {
+            var username = User.Identity.Name;
+
+            if(string.IsNullOrEmpty(username))
+            {
+                return BadRequest("Usuário não encontrado");
+            }
+
+            var user = await _authService.GetUser(username);
+
+            return  Ok(user);
          }
-        /// <summary>
-        /// Verifica se tem permissão de administrador
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("admin")]
-        [Authorize(Roles = "admin")]
-        public string Admin() => "Administrador";
 
     }
 
