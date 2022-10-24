@@ -11,11 +11,11 @@ namespace ApiAuth.Services.Interfaces
     {
         Task<User?> Login(string username, string password); 
         Task<User> Register(ParamRegister usuario); 
-        Task<User?> GetUser(string username); 
+        Task<User?> GetByUsername(string username); 
         Task<User?> GetUserByEmail(string email); 
         Task<User?> GetUserById(int id); 
-        Task<User?> PutUser(string username, User userUpdated);
+        Task<User?> PutUser(string username, ParamUpdateUser userUpdated);
         Task <bool> DeleteUser(string username);
-        Task<User?> PutUserAdm(string username, User userUpdated);
+        Task<User?> PutUserAdm(string username, ParamUpdateUserAdm userUpdated);
     }
 }

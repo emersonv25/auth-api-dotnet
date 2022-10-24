@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using ApiAuth.Services;
 using ApiAuth.Services.Interfaces;
 using ApiAuth.Models.Object;
+using NuGet.Protocol.Plugins;
+using api_auth.Models.Object;
 
 namespace ApiAuth.Controllers
 {
@@ -25,14 +27,14 @@ namespace ApiAuth.Controllers
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
-        public async Task<ActionResult<ViewUser>> LoginAsync([FromBody]ParamLogin login)
+        public async Task<ActionResult<ReturnToken>> Login([FromBody]ParamLogin login)
         {
             try
             {
-                User? user = await _authService.Login(login.Username, login.Password);
+                var user = await _authService.Login(login.Username, login.Password);
                 if (user == null)
                 {
-                    return BadRequest("Usuário ou senha inválidos !");
+                    return NotFound("Usuário ou senha inválidos !");
                 }
 
                 if (user.Enabled == false)
@@ -42,7 +44,7 @@ namespace ApiAuth.Controllers
 
                 var token = TokenService.GenerateToken(user);
 
-                return new ViewUser(user.Username, user.FullName, user.Email, token); ;
+                return new ReturnToken(token, "bearer", "2400"); ;
             }
             catch(Exception ex)
             {
@@ -63,6 +65,7 @@ namespace ApiAuth.Controllers
             {
                 if (user.Username != null && user.Password != null && user.FullName != null)
                 {
+
                     if (user.Password.Length < 4)
                     {
                         return BadRequest("A Senha precisa conter mais de 4 caracteres");
@@ -71,15 +74,15 @@ namespace ApiAuth.Controllers
                     {
                         return BadRequest("O nome de usuário precisa conter mais de 4 caracteres");
                     }
-                    if (user.FullName == "")
+                    if (string.IsNullOrWhiteSpace(user.FullName))
                     {
-                        return BadRequest("O Nome não pode ser nulo");
+                        return BadRequest("O nome é obrigatório");
                     }
-                    if (_authService.GetUser(user.Username) != null)
+                    if (await _authService.GetByUsername(user.Username) != null)
                     {
                         return BadRequest("Nome de usuário já cadastrado");
                     }
-                    if (_authService.GetUserByEmail(user.Email) != null)
+                    if (await _authService.GetUserByEmail(user.Email) != null)
                     {
                         return BadRequest("E-mail já cadastrado");
                     }
@@ -109,9 +112,9 @@ namespace ApiAuth.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPut]
-        [Route("admin/update/{id:int}")]
+        [Route("admin/update/{username}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> UpdateAdmin(string username, User usuarioEditado)
+        public async Task<ActionResult> PutAdmin(string username, ParamUpdateUserAdm usuarioEditado)
         {
             try
             {
@@ -135,9 +138,9 @@ namespace ApiAuth.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPut]
-        [Route("update/{id:int}")]
+        [Route("update")]
         [Authorize]
-        public async Task<ActionResult> Update(User userEdited)
+        public async Task<ActionResult> Put(ParamUpdateUser userEdited)
         {
             try
             {
@@ -170,7 +173,7 @@ namespace ApiAuth.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("admin/delete/{id:int}")]
+        [Route("admin/delete/{username}")]
         [Authorize(Roles = "admin")]
         public async Task<ActionResult> DeleteUserAdm(string username)
         {
@@ -197,9 +200,9 @@ namespace ApiAuth.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("authenticated")]
+        [Route("profile")]
         [Authorize]
-        public async Task<ActionResult<User?>> Authenticated() {
+        public async Task<ActionResult<User?>> GetUserProfile() {
             var username = User.Identity.Name;
 
             if(string.IsNullOrEmpty(username))
@@ -207,7 +210,7 @@ namespace ApiAuth.Controllers
                 return BadRequest("Usuário não encontrado");
             }
 
-            var user = await _authService.GetUser(username);
+            var user = await _authService.GetByUsername(username);
 
             return  Ok(user);
          }

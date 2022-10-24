@@ -32,4 +32,20 @@ namespace ApiAuth.Models.Object
         [RegularExpression(".+\\@.+\\..+", ErrorMessage = "Informe um email válido...")]
         public string Email { get; set; }
     }
+    public class ParamUpdateUser
+    {
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+    }
+    public class ParamUpdateUserAdm
+    {
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? FullName { get; set; }
+        public string? Email { get; set; }
+        public bool? Enabled { get; set; }
+        public bool? Admin { get; set; }
+    }
 }

@@ -32,7 +32,7 @@ namespace ApiAuth.Services
 
             return newUser;
         }
-        public async Task<User?> GetUser(string username)
+        public async Task<User?> GetByUsername(string username)
         {
             var user = new User();
             user = await _context.User.SingleOrDefaultAsync(u => u.Username == username);
@@ -53,27 +53,46 @@ namespace ApiAuth.Services
             return user;
         }
 
-        public async Task<User?> PutUserAdm(string username, User userEdited)
+        public async Task<User?> PutUserAdm(string username, ParamUpdateUserAdm userEdited)
         {
             var user = await _context.User.SingleOrDefaultAsync(u => u.Username == username);
             if (user != null)
             {
-                if (userEdited.Password != "" && userEdited.Password != null)
+                if (!string.IsNullOrWhiteSpace(userEdited.Password))
                 {
                     var password = Utils.sha256_hash(userEdited.Password);
                     user.Password = password;
                 }
-                user.FullName = userEdited.FullName;
-                user.Username = userEdited.Username;
-                user.Enabled = userEdited.Enabled;
-                user.Admin = userEdited.Admin;
-                user.Email = userEdited.Email;
+                if (!string.IsNullOrWhiteSpace(userEdited.FullName))
+                {
+                    user.FullName = userEdited.FullName;
+                }
+                if (!string.IsNullOrWhiteSpace(userEdited.Username))
+                {
+                    user.Username = userEdited.Username;
+                }
+                if (!string.IsNullOrWhiteSpace(userEdited.Email))
+                {
+                    user.Email = userEdited.Email;
+                }
+                if (!string.IsNullOrWhiteSpace(userEdited.Email))
+                {
+                    user.Email = userEdited.Email;
+                }
+                if (userEdited.Enabled.HasValue)
+                {
+                    user.Enabled = userEdited.Enabled;
+                }
+                if (userEdited.Admin.HasValue)
+                {
+                    user.Admin = userEdited.Admin;
+                }
                 await _context.SaveChangesAsync();
             }
 
             return user;
         }
-        public async Task<User?> PutUser(string username, User userEdited)
+        public async Task<User?> PutUser(string username, ParamUpdateUser userEdited)
         {
 
             var user = await _context.User.SingleOrDefaultAsync(u => u.Username == username);
@@ -84,9 +103,18 @@ namespace ApiAuth.Services
                     var password = Utils.sha256_hash(userEdited.Password);
                     user.Password = password;
                 }
-                user.FullName = userEdited.FullName;
-                user.Username = userEdited.Username;
-                user.Email = userEdited.Email;
+                if(!string.IsNullOrWhiteSpace(userEdited.FullName))
+                {
+                    user.FullName = userEdited.FullName;
+                }
+                if (!string.IsNullOrWhiteSpace(userEdited.Username))
+                {
+                    user.Username = userEdited.Username;
+                }
+                if (!string.IsNullOrWhiteSpace(userEdited.Email))
+                {
+                    user.Email = userEdited.Email;
+                }
                 await _context.SaveChangesAsync();
             }
 
