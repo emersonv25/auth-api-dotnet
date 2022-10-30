@@ -140,7 +140,7 @@ namespace ApiAuth.Controllers
         [HttpPut]
         [Route("update")]
         [Authorize]
-        public async Task<ActionResult> Put(ParamUpdateUser userEdited)
+        public async Task<ActionResult<User?>> Put(ParamUpdateUser userEdited)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace ApiAuth.Controllers
                     return BadRequest("Falha ao editar usuário");
                 }
 
-                return Ok("Usuário editado com sucesso !");
+                return Ok(user);
 
             }
             catch (Exception ex)
