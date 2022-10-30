@@ -1,8 +1,5 @@
 # ApiLogin
-Webapi para autenticação com JWT
-
-# Front-End
-https://github.com/emersonv25/Login-JWT-VueJs
+Webapi para autenticação com JWT Token
 
 # Tecnologias Utilizadas
 * Asp .Net Core 6 + Entity Framework Core 6
