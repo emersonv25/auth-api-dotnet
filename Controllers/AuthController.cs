@@ -21,8 +21,9 @@ namespace ApiAuth.Controllers
         }
 
         /// <summary>
-        /// Login, obtem o token do usuário através de seu username e senha
+        /// get the user's token
         /// </summary>
+        /// <param name="login"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("login")]
@@ -53,8 +54,9 @@ namespace ApiAuth.Controllers
 
         }
         /// <summary>
-        /// Registra o usuário
+        /// register the user
         /// </summary>
+        /// <param name="user"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("register")]
@@ -107,18 +109,19 @@ namespace ApiAuth.Controllers
 
         }
         /// <summary>
-        /// Edita um usuário especifico
+        /// Edit a specific user
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="username"></param>
+        /// <param name="userEdited"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("admin/update/{username}")]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> PutAdmin(string username, ParamUpdateUserAdm usuarioEditado)
+        public async Task<ActionResult> PutAdmin(string username, ParamUpdateUserAdm userEdited)
         {
             try
             {
-                User? usuario = await _authService.PutUserAdm(username, usuarioEditado);
+                User? usuario = await _authService.PutUserAdm(username, userEdited);
                 if (usuario == null)
                 {
                     return BadRequest("Usuário não encontrado");
@@ -133,9 +136,9 @@ namespace ApiAuth.Controllers
 
         }
         /// <summary>
-        /// Permite o proprio usuário editar seus dados
+        /// Allows the user to edit their data
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="userEdited"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("update")]
@@ -168,9 +171,9 @@ namespace ApiAuth.Controllers
 
         }
         /// <summary>
-        /// Deleta um usuário especifico
+        /// Delete a specific user
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="username"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("admin/delete/{username}")]
@@ -196,7 +199,7 @@ namespace ApiAuth.Controllers
         }
 
         /// <summary>
-        /// Verifica se está autenticado e retorna as informações do usuario
+        /// Checks if you are authenticated and returns user information
         /// </summary>
         /// <returns></returns>
         [HttpGet]
